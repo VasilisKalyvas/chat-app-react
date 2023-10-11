@@ -13,7 +13,6 @@ function App() {
  
   const handleSendMessage = () => {
     if(!message?.length) return
-    console.log(message)
     socket.emit('send-message', {message, user: username})
     setMessage('')
   } 
@@ -30,12 +29,10 @@ function App() {
     })
 
     socket.on('messages', (messages) => {
-      console.log('socket-mes', messages)
       setMessages(messages)
     })
   }, [socket])
   
-  console.log(messages)
   return (
     <div className="App">
 
