@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { socket } from './socket';
-import LeftSidebar from './components/LeftSidebar';
-import Header from './components/Header';
-import Main from './components/Main';
-import RightSidebar from './components/RightSidebar';
 
 
 function App() {
@@ -42,10 +38,6 @@ function App() {
   console.log(messages)
   return (
     <div className="App">
-      {/* <LeftSidebar/>
-      <Header/>
-      <Main/>
-      <RightSidebar/> */}
 
       {
         username?.length 
