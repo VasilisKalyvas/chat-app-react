@@ -73,7 +73,7 @@ function App() {
         ?
           <>
             <div style={{marginTop: '2rem'}}>
-                <input onChange={(e) => setMessage(e.target.value)}/>
+                <input value={message} onChange={(e) => setMessage(e.target.value)}/>
                 <button onClick={handleSendMessage}>Send</button>
             </div>
             <div style={{marginTop: '5rem'}}>
