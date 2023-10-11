@@ -1,0 +1,9 @@
+.message-container{
+    height: 300px;
+    overflow: hidden;
+    width: 400px;
+    border: 2px solid blue;
+    padding: 20px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}

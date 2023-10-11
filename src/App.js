@@ -78,6 +78,7 @@ function App() {
             </div>
             <div style={{marginTop: '5rem'}}>
                 Messages:
+                <div className='message-container'>
                 {
                   messages?.map((item, index) => (
                     <ul key={index}>
@@ -87,6 +88,8 @@ function App() {
                     </ul>
                   ))
                 }
+                </div>
+                
             </div>
           </>
         :
