@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import { socket } from './socket';
 
@@ -10,18 +10,31 @@ function App() {
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('')
   const [onlineUsers, setOnlineUsers] = useState([])
- 
+  const messagesContainerRef = useRef(null);
+
   const handleSendMessage = () => {
     if(!message?.length) return
     socket.emit('send-message', {message, user: username})
     setMessage('')
   } 
 
+  const scrollDown = () => {
+    if( messagesContainerRef?.current){
+      messagesContainerRef?.current?.scrollIntoView();
+    }
+  };
+
+  const handleInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSendMessage();
+    }
+  };
+
   useEffect(() => {
     if(username){
       socket.emit('username', username)
     }
-  }, [username])
+  }, [socket, username])
 
   useEffect(() =>{
     socket.on('online', (onlineUsers) => {
@@ -32,6 +45,10 @@ function App() {
       setMessages(messages)
     })
   }, [socket])
+
+  useEffect(() => {
+    scrollDown();
+  }, [messages])
   
   return (
     <div className="App">
@@ -52,7 +69,8 @@ function App() {
         onlineUsers?.length
         ?
           <>
-           <div style={{marginTop: '2rem'}} >Online Users:</div>
+           <div style={{marginTop: '1rem'}} >Online Users:</div>
+           <div className='online'>
             {   
               onlineUsers?.map((user, index) => 
                 <ul key={index}>
@@ -65,6 +83,7 @@ function App() {
                   </li>
                 </ul>)
             }
+           </div>
           </>
         : <div>There are no online users connected</div>
       }
@@ -72,22 +91,23 @@ function App() {
         username
         ?
           <>
-            <div style={{marginTop: '2rem'}}>
-                <input value={message} onChange={(e) => setMessage(e.target.value)}/>
+            <div style={{marginTop: '1rem'}}>
+                <input value={message}  onKeyPress={handleInputKeyPress} onChange={(e) => setMessage(e.target.value)}/>
                 <button onClick={handleSendMessage}>Send</button>
             </div>
-            <div style={{marginTop: '5rem'}}>
+            <div style={{marginTop: '3rem'}}>
                 Messages:
                 <div className='message-container'>
-                {
-                  messages?.map((item, index) => (
-                    <ul key={index}>
-                      <li>
-                        {socket?.id === item.socketId ? 'You': item.user}: {item.message}
-                      </li>
-                    </ul>
-                  ))
-                }
+                  {
+                    messages?.map((item, index) => (
+                      <ul key={index}>
+                        <li>
+                          {socket?.id === item.socketId ? 'You': item.user}: {item.message}
+                        </li>
+                      </ul>
+                    ))
+                  }
+                  <div ref={messagesContainerRef}/>
                 </div>
                 
             </div>

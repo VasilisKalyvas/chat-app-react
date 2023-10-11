@@ -1,9 +1,20 @@
 .message-container{
-    height: 300px;
+    height: 200px;
     overflow: hidden;
     width: 400px;
     border: 2px solid blue;
-    padding: 20px;
+    padding: 10px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scroll-behavior: smooth;
+}
+
+.online {
+    height: 200px;
+    overflow: hidden;
+    width: 200px;
+    border: 2px solid greenyellow;
+    padding: 10px;
     overflow-y: auto;
     scrollbar-width: thin;
 }
