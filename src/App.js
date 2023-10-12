@@ -16,6 +16,7 @@ function App() {
 
   const handleSendMessage = () => {
     if(!message?.length) return
+    clearTimeout(typingTimeout);
     socket.emit('send-message', {message, user: username})
     setMessage('')
   } 
@@ -23,10 +24,6 @@ function App() {
   
   useEffect(() => {
     let typingTimeout;
-
-    if(!message?.length) {
-      clearTimeout(typingTimeout);
-    }
 
     const handleTyping = () => {
       setIsTyping(true);
