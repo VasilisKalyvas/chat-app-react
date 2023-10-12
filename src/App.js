@@ -24,31 +24,31 @@ function App() {
   useEffect(() => {
     let typingTimeout;
 
+    if(!message?.length) {
+      clearTimeout(typingTimeout);
+    }
+
     const handleTyping = () => {
       setIsTyping(true);
-
-      // Emit a "typing" event to the server
       socket.emit('typing', { isTyping: true, username, socketId: socket.id });
 
       clearTimeout(typingTimeout);
       typingTimeout = setTimeout(() => {
         setIsTyping(false);
         socket.emit('typing', { isTyping: false, username, socketId: socket.id });
-      }, 3000); // Display "Someone is typing..." for 3 seconds
+      }, 3000);
     };
 
-    // Add event listeners for input and blur events
     const inputElement = document.getElementById('message-input');
     if (inputElement) {
       inputElement.addEventListener('input', handleTyping);
       inputElement.addEventListener('blur', () => {
-        clearTimeout(typingTimeout); // Clear the timeout when the user stops typing
+        clearTimeout(typingTimeout);
         setIsTyping(false);
         socket.emit('typing', { isTyping: false, username, socketId: socket.id });
       });
     }
 
-    // Clean up event listeners and timeout when the component unmounts
     return () => {
       if (inputElement) {
         inputElement.removeEventListener('input', handleTyping);
@@ -59,7 +59,7 @@ function App() {
         });
       }
     };
-  }, [username]);
+  }, [username, message]);
 
   const scrollDown = () => {
     if( messagesContainerRef?.current){
