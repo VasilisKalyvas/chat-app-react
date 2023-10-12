@@ -14,6 +14,8 @@ function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [usersTyping, setUsersTyping] = useState([])
 
+  let typingTimeout;
+
   const handleSendMessage = () => {
     if(!message?.length) return
     clearTimeout(typingTimeout);
@@ -23,8 +25,7 @@ function App() {
 
   
   useEffect(() => {
-    let typingTimeout;
-
+    
     const handleTyping = () => {
       setIsTyping(true);
       socket.emit('typing', { isTyping: true, username, socketId: socket.id });
