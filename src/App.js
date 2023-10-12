@@ -12,7 +12,7 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const messagesContainerRef = useRef(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [userTyping, setUserTyping] = useState('')
+  const [usersTyping, setUsersTyping] = useState([])
 
   const handleSendMessage = () => {
     if(!message?.length) return
@@ -50,9 +50,18 @@ function App() {
     }
   };
 
+  const handleLogin = () => {
+    if(name === 'You' || onlineUsers?.find(user => user.username === name) || !name?.length){
+      window.alert('Name is not available')
+      return
+    } else {
+      setUsername(name)
+    }
+  } 
+
   const handleInputKeyPressSubmit = (e) => {
     if (e.key === 'Enter') {
-      setUsername(name)
+      handleLogin(name)
     }
   };
 
@@ -77,12 +86,17 @@ function App() {
       setMessages(messages)
     })
 
-    socket.on('typing', ({isTyping, username}) => {
+    socket.on('typing', ({isTyping, typingUsers}) => {
       setIsTyping(isTyping)
-      setUserTyping(username)
+      if(isTyping && typingUsers?.find(user => user === username)){
+        const updatedTypingUsers = typingUsers?.filter(user => user !== username)
+        setUsersTyping(updatedTypingUsers)
+      }else {
+        setUsersTyping(typingUsers)
+      }
     })
 
-  }, [])
+  }, [username])
 
   useEffect(() => {
     scrollDown();
@@ -96,13 +110,14 @@ function App() {
     const disconnectTimeout = setTimeout(() => {
       console.log('Disconnected from the server');
       // Handle the disconnection (e.g., update UI)
-    }, 15000); // Disconnect if no heartbeat received for 15 seconds
+    }, 25000); // Disconnect if no heartbeat received for 15 seconds
   
     return () => {
       clearTimeout(disconnectTimeout);
     };
   }, []);
 
+  console.log(usersTyping)
   return (
     <div className="App">
 
@@ -114,7 +129,7 @@ function App() {
           <>
             <span>Username: </span>
             <input onKeyPress={handleInputKeyPressSubmit} onChange={(e) => setName(e.target.value)}/>
-            <button onClick={()=> setUsername(name)}>Sumbit</button>
+            <button onClick={handleLogin}>Sumbit</button>
           </>
       }
     
@@ -166,9 +181,9 @@ function App() {
                   </div>
                  <div className='typing-container'>
                     {
-                      userTyping?.length && isTyping
+                      usersTyping?.length && isTyping
                       ?
-                        <div>{`${userTyping} is typing...`}</div>
+                        <div>{`${usersTyping[0]} is typing ${usersTyping?.length > 1 ? `+ ${usersTyping?.length - 1}` : ''}...`}</div>
                       : null
                     }
                  </div>
