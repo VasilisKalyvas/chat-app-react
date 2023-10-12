@@ -43,19 +43,6 @@ function App() {
     });
   }, [])
 
-  useEffect(() => {
-    socket.on('heartbeat', () => {
-    });
-
-    const disconnectTimeout = setTimeout(() => {
-      console.log('Disconnected from the server');
-    }, 25000); 
-  
-    return () => {
-      clearTimeout(disconnectTimeout);
-    };
-  }, []);
-
   return (
     <div className="App">
       {
