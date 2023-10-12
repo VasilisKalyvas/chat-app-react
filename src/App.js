@@ -23,9 +23,8 @@ function App() {
     setMessage('')
   } 
 
-  
   useEffect(() => {
-    
+
     const handleTyping = () => {
       setIsTyping(true);
       socket.emit('typing', { isTyping: true, username, socketId: socket.id });
