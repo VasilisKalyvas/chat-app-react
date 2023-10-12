@@ -19,24 +19,47 @@ function App() {
     socket.emit('send-message', {message, user: username})
     setMessage('')
   } 
-  const typingTimeout = 2000;
-  let typingTimer = null;
+
   
-  const handleTyping = () => {
-    clearTimeout(typingTimer);
-  
-    if (message?.length > 0 && !isTyping) {
-      socket.emit('typing', { isTyping: true, username });
+  useEffect(() => {
+    let typingTimeout;
+
+    const handleTyping = () => {
       setIsTyping(true);
-    }
-  
-    typingTimer = setTimeout(() => {
-      if (isTyping) {
-        socket.emit('typing', { isTyping: false, username });
+
+      // Emit a "typing" event to the server
+      socket.emit('typing', { isTyping: true, username, socketId: socket.id });
+
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
         setIsTyping(false);
+        socket.emit('typing', { isTyping: false, username, socketId: socket.id });
+      }, 3000); // Display "Someone is typing..." for 3 seconds
+    };
+
+    // Add event listeners for input and blur events
+    const inputElement = document.getElementById('message-input');
+    if (inputElement) {
+      inputElement.addEventListener('input', handleTyping);
+      inputElement.addEventListener('blur', () => {
+        clearTimeout(typingTimeout); // Clear the timeout when the user stops typing
+        setIsTyping(false);
+        socket.emit('typing', { isTyping: false, username, socketId: socket.id });
+      });
+    }
+
+    // Clean up event listeners and timeout when the component unmounts
+    return () => {
+      if (inputElement) {
+        inputElement.removeEventListener('input', handleTyping);
+        inputElement.removeEventListener('blur', () => {
+          clearTimeout(typingTimeout);
+          setIsTyping(false);
+          socket.emit('typing', { isTyping: false, username, socketId: socket.id });
+        });
       }
-    }, typingTimeout);
-  };
+    };
+  }, [username]);
 
   const scrollDown = () => {
     if( messagesContainerRef?.current){
@@ -86,17 +109,12 @@ function App() {
       setMessages(messages)
     })
 
-    socket.on('typing', ({isTyping, typingUsers}) => {
-      setIsTyping(isTyping)
-      if(isTyping && typingUsers?.find(user => user === username)){
-        const updatedTypingUsers = typingUsers?.filter(user => user !== username)
-        setUsersTyping(updatedTypingUsers)
-      }else {
-        setUsersTyping(typingUsers)
-      }
-    })
+    socket.on('typing', ({ isTyping, typingUsers }) => {
+      const updatedTypingUsers = typingUsers?.filter(user => user.socketId !== socket.id);
+      setUsersTyping(updatedTypingUsers);
+    });
 
-  }, [username])
+  }, [])
 
   useEffect(() => {
     scrollDown();
@@ -117,7 +135,6 @@ function App() {
     };
   }, []);
 
-  console.log(usersTyping)
   return (
     <div className="App">
 
@@ -181,9 +198,9 @@ function App() {
                   </div>
                  <div className='typing-container'>
                     {
-                      usersTyping?.length && isTyping
+                      usersTyping?.length
                       ?
-                        <div>{`${usersTyping[0]} is typing ${usersTyping?.length > 1 ? `+ ${usersTyping?.length - 1}` : ''}...`}</div>
+                        <div>{`${usersTyping[0].username} is typing ${usersTyping?.length > 1 ? `+ ${usersTyping?.length - 1}` : ''}...`}</div>
                       : null
                     }
                  </div>
@@ -191,7 +208,7 @@ function App() {
                 </div>
             </div>
             <div style={{marginTop: '0.5rem'}}>
-                <input value={message}  onKeyPress={handleInputKeyPress} onChange={(e) => { setMessage(e.target.value); handleTyping();}}/>
+                <input id='message-input' value={message}  onKeyPress={handleInputKeyPress} onChange={(e) => setMessage(e.target.value)}/>
                 <button onClick={handleSendMessage}>Send</button>
             </div>
           </>
