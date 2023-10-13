@@ -86,3 +86,12 @@
     font-style: italic;
     font-weight: bold;
 }
+
+.message{
+    color: black;
+    font-weight: bold;
+}
+.your-message {
+    font-weight: bold;
+    color: #7289da;
+}

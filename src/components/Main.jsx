@@ -86,7 +86,7 @@ const Main = ({username, socket, messages, usersTyping,}) => {
                       item.socketId === socket.id && item?.isAdmin
                       ? ''
                       : 
-                        <div className={`${item?.user === 'Admin' ? 'admin-message' : ''}`}>
+                        <div className={`${item?.user === 'Admin' ? 'admin-message' : item.user === username ? 'your-message' : 'message'}`}>
                           {item.user === username ? 'You': item.user}: {item.message}
                         </div>
                     }
