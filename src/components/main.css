@@ -85,10 +85,11 @@
 .admin-message {
     font-style: italic;
     font-weight: bold;
+    color: black;
 }
 
 .message{
-    color: black;
+    color: white;
     font-weight: bold;
 }
 .your-message {
