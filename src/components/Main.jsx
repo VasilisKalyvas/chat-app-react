@@ -6,9 +6,7 @@ const Main = ({username, socket, messages, usersTyping,}) => {
   const [message, setMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false);
 
-  
   const messagesContainerRef = useRef(null);
-
   const typingTimeoutRef = useRef(null); 
   
   const handleSendMessage = () => {
@@ -37,12 +35,13 @@ const Main = ({username, socket, messages, usersTyping,}) => {
   useEffect(() => {
 
     const handleTyping = () => {
+      clearTimeout(typingTimeoutRef.current);
+      
       if(message?.length > 0){
         setIsTyping(true);
         socket.emit('typing', { isTyping: true, username, socketId: socket.id });
       }
 
-      clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
         setIsTyping(false);
         socket.emit('typing', { isTyping: false, username, socketId: socket.id });
