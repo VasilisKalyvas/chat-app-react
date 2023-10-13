@@ -28,7 +28,6 @@ function App() {
   }
 
   useEffect(() => {
-    
     socket.on('online', (onlineUsers) => {
       setOnlineUsers(onlineUsers)
     })
@@ -37,7 +36,7 @@ function App() {
       setMessages(messages)
     })
 
-    socket.on('typing', ({ isTyping, typingUsers }) => {
+    socket.on('typing', ({isTyping, typingUsers }) => {
       const updatedTypingUsers = typingUsers?.filter(user => user.socketId !== socket.id);
       setUsersTyping(updatedTypingUsers);
     });
@@ -46,6 +45,7 @@ function App() {
   useEffect(() => {
     const handleBeforeUnload = (e) => {
      socket.emit('logout', username)
+     setUsername('')
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -58,7 +58,7 @@ function App() {
   return (
     <div className="App">
       {
-        !username?.length
+        !username?.length || !socket?.id
         ? 
           <Login setName={setName} handleLogin={handleLogin}/>
         :   
