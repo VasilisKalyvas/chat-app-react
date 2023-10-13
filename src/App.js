@@ -13,7 +13,7 @@ function App() {
   const [usersTyping, setUsersTyping] = useState([])
 
   const handleLogin = () => {
-    if(name === 'You' || onlineUsers?.find(user => user.username === name) || !name?.length){
+    if(name.toUpperCase() === 'YOU' || name.toUpperCase() === 'ADMIN' ||onlineUsers?.find(user => user.username.toUpperCase() === name.toUpperCase()) || !name?.length){
       window.alert('Name is not available')
       return
     } else {
@@ -42,6 +42,18 @@ function App() {
       setUsersTyping(updatedTypingUsers);
     });
   }, [])
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+     socket.emit('logout', username)
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [username]);
 
   return (
     <div className="App">

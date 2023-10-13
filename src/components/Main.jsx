@@ -37,8 +37,10 @@ const Main = ({username, socket, messages, usersTyping,}) => {
   useEffect(() => {
 
     const handleTyping = () => {
-      setIsTyping(true);
-      socket.emit('typing', { isTyping: true, username, socketId: socket.id });
+      if(message?.length > 0){
+        setIsTyping(true);
+        socket.emit('typing', { isTyping: true, username, socketId: socket.id });
+      }
 
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
@@ -109,6 +111,7 @@ const Main = ({username, socket, messages, usersTyping,}) => {
                    value={message}  
                    onKeyPress={handleInputKeyPress} 
                    onChange={(e) => setMessage(e.target.value)}
+                   style={{padding: '9px'}}
             />
             <BiSend size={'24px'} 
                     style={{cursor: 'pointer', color: 'black'}}
