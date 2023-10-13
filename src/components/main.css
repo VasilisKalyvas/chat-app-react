@@ -65,6 +65,7 @@
 }
 
 .messages-input-container {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -92,7 +93,19 @@
     color: white;
     font-weight: bold;
 }
+
 .your-message {
     font-weight: bold;
     color: #7289da;
+}
+
+.emoji-container {
+    position: absolute;
+    bottom: 50px;
+    right: 30px;
+}
+
+.EmojiPickerReact{
+    height: 420px!important;
+    width: 280px!important;
 }

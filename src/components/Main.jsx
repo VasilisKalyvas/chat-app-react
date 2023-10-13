@@ -1,14 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { BiSend } from 'react-icons/bi'
+import { BsEmojiSmile } from 'react-icons/bs'
+import EmojiPicker from 'emoji-picker-react';
 import './main.css'
+
 
 const Main = ({username, socket, messages, usersTyping,}) => {
   const [message, setMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false);
+  const [isPickerVisible, setPickerVisible] = useState(false);
 
   const messagesContainerRef = useRef(null);
   const typingTimeoutRef = useRef(null); 
-  
+  const emojiPickerRef = useRef(null);
+
+  const handleEmojiClick = (emoji) => {
+    setMessage(
+      (message) =>
+        message + (emoji.isCustom ? emoji.unified : emoji.emoji)
+    );
+  };
+
   const handleSendMessage = () => {
     if(!message?.length) return
     clearTimeout(typingTimeoutRef.current);
@@ -33,15 +45,14 @@ const Main = ({username, socket, messages, usersTyping,}) => {
   }, [messages, isTyping])
 
   useEffect(() => {
-
     const handleTyping = () => {
-      clearTimeout(typingTimeoutRef.current);
-      
+
       if(message?.length > 0){
         setIsTyping(true);
         socket.emit('typing', { isTyping: true, username, socketId: socket.id });
       }
 
+      clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
         setIsTyping(false);
         socket.emit('typing', { isTyping: false, username, socketId: socket.id });
@@ -69,6 +80,24 @@ const Main = ({username, socket, messages, usersTyping,}) => {
       }
     };
   }, [username, message, socket]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setPickerVisible(false);
+      }
+    }
+
+    if (isPickerVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPickerVisible]);
 
   return (
     <div className='main'>
@@ -112,10 +141,25 @@ const Main = ({username, socket, messages, usersTyping,}) => {
                    onChange={(e) => setMessage(e.target.value)}
                    style={{padding: '9px'}}
             />
+            <BsEmojiSmile 
+              size={'24px'} 
+              style={{cursor: 'pointer', color: 'black'}}
+              onClick={() => setPickerVisible(!isPickerVisible)}
+            />
+            
             <BiSend size={'24px'} 
                     style={{cursor: 'pointer', color: 'black'}}
                     onClick={handleSendMessage}
             />
+            {isPickerVisible && (
+              <div className='emoji-container'  ref={emojiPickerRef}>
+                 <EmojiPicker
+                  onEmojiClick={handleEmojiClick}
+                  theme='dark'
+                />
+              </div>
+             
+            )}
           </div>
         </div>
     </div>
