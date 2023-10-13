@@ -46,23 +46,17 @@ function App() {
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-     e.preventDefault();
-     e.returnValue = ''
-    };
 
-    const handleUnload = (e) => {
-      socket.emit('logout', username)
+      socket.disconnect('disconnect')
       setUsername('')
-    }
+    }; 
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('unload', handleUnload);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('unload', handleUnload);
     };
-  }, [username]);
+  }, []);
 
   useEffect(() => {
     if(!socket.connected){
