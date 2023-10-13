@@ -46,22 +46,21 @@ function App() {
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      socket.emit('logout', username);
-      setUsername('');
+     e.preventDefault();
+     e.returnValue = ''
     };
-  
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        socket.emit('tabHidden', username);
-      }
-    };
-  
+
+    const handleUnload = (e) => {
+      socket.emit('logout', username)
+      setUsername('')
+    }
+
     window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-  
+    window.addEventListener('unload', handleUnload);
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('unload', handleUnload);
     };
   }, [username]);
 
