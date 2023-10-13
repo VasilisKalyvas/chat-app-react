@@ -46,14 +46,22 @@ function App() {
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-     socket.emit('logout', username)
-     setUsername('')
+      socket.emit('logout', username);
+      setUsername('');
     };
-
+  
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        socket.emit('tabHidden', username);
+      }
+    };
+  
     window.addEventListener('beforeunload', handleBeforeUnload);
-
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [username]);
 
@@ -62,7 +70,7 @@ function App() {
       setUsername('')
     }
   }, [])
-  
+
   return (
     <div className="App">
       {
