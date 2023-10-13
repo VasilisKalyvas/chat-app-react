@@ -154,6 +154,7 @@ const Main = ({username, socket, messages, usersTyping,}) => {
             {isPickerVisible && (
               <div className='emoji-container'  ref={emojiPickerRef}>
                  <EmojiPicker
+                  autoFocusSearch={false}
                   onEmojiClick={handleEmojiClick}
                   theme='dark'
                 />
