@@ -11,6 +11,7 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [messages, setMessages] = useState([])
   const [usersTyping, setUsersTyping] = useState([])
+  const [connected, setIsConnected] = useState(false)
 
   const handleLogin = () => {
     if(!socket.connected) return
@@ -30,6 +31,11 @@ function App() {
   }
 
   useEffect(() => {
+    
+    socket.on('connected', ({isConnected}) => {
+      setIsConnected(isConnected)
+    })
+
     socket.on('online', (onlineUsers) => {
       setOnlineUsers(onlineUsers)
     })
@@ -59,10 +65,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if(!socket.connected){
-      setUsername('')
-    }
-  }, [])
+   if(!connected){
+    setUsername('')
+   }
+  }, [connected])
 
   return (
     <div className="App">
