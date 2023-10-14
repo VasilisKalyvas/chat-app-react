@@ -53,7 +53,7 @@ function App() {
   useEffect(() => {
     const handleBeforeUnload = (e) => {
 
-      socket.disconnect('disconnect')
+      socket.disconnect()
       setUsername('')
     }; 
 
