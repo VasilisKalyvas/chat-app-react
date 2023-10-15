@@ -59,9 +59,10 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 10vh;
+    height: 5vh;
     font-weight: 500;
     font-style: italic;
+    color: #7289da;
 }
 
 .messages-input-container {
@@ -72,13 +73,14 @@
     width: 100%;
     height: 50px;
     gap: 5px;
+    padding-left: 8px;
 }
 
 .messages-input {
-    width: 80%;
+    width: 70%;
     background-color: inherit;
     border: 1px solid #282b30;
-    height: 20px;
+    height: 28px;
     border-radius: 5px;
     outline: none;
 }
@@ -108,4 +110,19 @@
 .EmojiPickerReact{
     height: 420px!important;
     width: 280px!important;
+}
+.image-message-row{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.image-message {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+}
+
+.modal-body {
+    padding: 0;
 }

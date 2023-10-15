@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
+import RenderFileMessage from './RenderFileMessage';
 import { BiSend } from 'react-icons/bi'
 import { BsEmojiSmile } from 'react-icons/bs'
+import { AiFillPicture } from 'react-icons/ai'
 import EmojiPicker from 'emoji-picker-react';
 import './main.css'
 
-
 const Main = ({username, socket, messages, usersTyping,}) => {
-  const [message, setMessage] = useState('')
-  const [isTyping, setIsTyping] = useState(false);
+  const [message, setMessage] = useState({content:'', type:''})
   const [isPickerVisible, setPickerVisible] = useState(false);
 
   const messagesContainerRef = useRef(null);
@@ -15,17 +15,27 @@ const Main = ({username, socket, messages, usersTyping,}) => {
   const emojiPickerRef = useRef(null);
 
   const handleEmojiClick = (emoji) => {
-    setMessage(
-      (message) =>
-        message + (emoji.isCustom ? emoji.unified : emoji.emoji)
-    );
+
+    message.content = message.content + (emoji.isCustom ? emoji.unified : emoji.emoji);
+        setMessage(message);
   };
 
+  const handeOnPictureClick = () => {
+    document.getElementById('file_upload_id').click();
+  }
+
+  const selectFile = (e) => {
+    socket.emit('send-message', { 
+      message: {content: e.target.files[0], type: e.target.files[0].type, user: username}, user: username
+    })
+  }
+  
   const handleSendMessage = () => {
-    if(!message?.length) return
+    if(!message?.content?.length) return
+
     clearTimeout(typingTimeoutRef.current);
     socket.emit('send-message', {message, user: username})
-    setMessage('')
+    setMessage({content:'', type:''})
   }
 
   const handleInputKeyPress = (e) => {
@@ -42,19 +52,17 @@ const Main = ({username, socket, messages, usersTyping,}) => {
 
   useEffect(() => {
     scrollDown();
-  }, [messages, isTyping])
+  }, [messages])
 
   useEffect(() => {
     const handleTyping = () => {
 
-      if(message?.length > 0){
-        setIsTyping(true);
+      if(message?.content?.length > 0){
         socket.emit('typing', { isTyping: true, username, socketId: socket.id });
       }
 
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
-        setIsTyping(false);
         socket.emit('typing', { isTyping: false, username, socketId: socket.id });
       }, 3000);
     };
@@ -64,7 +72,6 @@ const Main = ({username, socket, messages, usersTyping,}) => {
       inputElement.addEventListener('input', handleTyping);
       inputElement.addEventListener('blur', () => {
         clearTimeout(typingTimeoutRef.current);
-        setIsTyping(false);
         socket.emit('typing', { isTyping: false, username, socketId: socket.id });
       });
     }
@@ -74,7 +81,6 @@ const Main = ({username, socket, messages, usersTyping,}) => {
         inputElement.removeEventListener('input', handleTyping);
         inputElement.removeEventListener('blur', () => {
           clearTimeout(typingTimeoutRef.current);
-          setIsTyping(false);
           socket.emit('typing', { isTyping: false, username, socketId: socket.id });
         });
       }
@@ -111,17 +117,31 @@ const Main = ({username, socket, messages, usersTyping,}) => {
                  messages?.map((item, index) => ( 
                   <div key={index}>
                     {
-                      item.socketId === socket.id && item?.isAdmin
-                      ? ''
-                      : 
-                        <div className={`${item?.user === 'Admin' ? 'admin-message' : item.user === username ? 'your-message' : 'message'}`}>
-                          {item.user === username ? 'You': item.user}: {item.message}
-                        </div>
+                      item.message.type !== 'message'
+                      ? 
+                      <RenderFileMessage
+                        user={item.user}
+                        currentUser={username} 
+                        file={item.message.content}
+                        type={item.message.type}
+                        onLoad={scrollDown}
+                      />
+                      :  
+                        <>
+                         {
+                            item.socketId === socket.id && item?.isAdmin
+                            ? ''
+                            : 
+                              <div className={`${item?.user === 'Admin' ? 'admin-message' : item.user === username ? 'your-message' : 'message'}`}>
+                                {item.user === username ? 'You': item.user}: {item.message.content}
+                              </div>
+                          }
+                        </>
                     }
                   </div>
                  ))
               } 
-               <div ref={messagesContainerRef}/>
+              <div ref={messagesContainerRef}/>
             </div>
           </div>
           <div className='events'> 
@@ -136,11 +156,23 @@ const Main = ({username, socket, messages, usersTyping,}) => {
             <input className='messages-input' 
                    placeholder='messsage...' 
                    id='message-input' 
-                   value={message}  
+                   value={message.content}  
                    onKeyPress={handleInputKeyPress} 
-                   onChange={(e) => setMessage(e.target.value)}
+                   onChange={(e) => setMessage({content: e.target.value, type:'message'})}
                    style={{padding: '9px'}}
             />
+            <input id='file_upload_id' 
+                   type='file' 
+                   onChange={(e) => selectFile(e)} 
+                   style={{display:'none'}}
+            />
+
+            <AiFillPicture  
+              size={'24px'} 
+              style={{cursor: 'pointer', color: 'black'}}
+              onClick={handeOnPictureClick}
+            />
+
             <BsEmojiSmile 
               size={'24px'} 
               style={{cursor: 'pointer', color: 'black'}}
