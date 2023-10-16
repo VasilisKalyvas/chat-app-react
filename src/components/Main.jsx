@@ -1,14 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react'
 import RenderFileMessage from './RenderFileMessage';
+import { AudioRecorder } from 'react-audio-voice-recorder';
 import { BiSend } from 'react-icons/bi'
 import { BsEmojiSmile } from 'react-icons/bs'
 import { AiFillPicture } from 'react-icons/ai'
 import EmojiPicker from 'emoji-picker-react';
 import './main.css'
+import RenderVoiceMessage from './RenderVoiceMessage';
 
 const Main = ({username, socket, messages, usersTyping,}) => {
   const [message, setMessage] = useState({content:'', type:''})
   const [isPickerVisible, setPickerVisible] = useState(false);
+  const [isRecording, setIsRecording] = useState(false)
 
   const messagesContainerRef = useRef(null);
   const typingTimeoutRef = useRef(null); 
@@ -36,6 +39,14 @@ const Main = ({username, socket, messages, usersTyping,}) => {
     clearTimeout(typingTimeoutRef.current);
     socket.emit('send-message', {message, user: username})
     setMessage({content:'', type:''})
+  }
+
+  const handleRecordVoiceMessage = async (blob) => {
+    const buf = await blob.arrayBuffer();
+    socket.emit('send-message', { 
+      message: {content: buf, type: 'voice-message', user: username}, user: username
+    })
+    setIsRecording(false)
   }
 
   const handleInputKeyPress = (e) => {
@@ -105,6 +116,7 @@ const Main = ({username, socket, messages, usersTyping,}) => {
     };
   }, [isPickerVisible]);
 
+
   return (
     <div className='main'>
         <div className='main-header'>
@@ -119,13 +131,22 @@ const Main = ({username, socket, messages, usersTyping,}) => {
                     {
                       item.message.type !== 'message'
                       ? 
-                      <RenderFileMessage
-                        user={item.user}
-                        currentUser={username} 
-                        file={item.message.content}
-                        type={item.message.type}
-                        onLoad={scrollDown}
-                      />
+                        item.message.type === 'voice-message'
+                        ?
+                          <RenderVoiceMessage
+                            user={item.user}
+                            currentUser={username} 
+                            file={item.message.content}
+                            onLoad={scrollDown}
+                          />
+                        : 
+                          <RenderFileMessage
+                            user={item.user}
+                            currentUser={username} 
+                            file={item.message.content}
+                            type={item.message.type}
+                            onLoad={scrollDown}
+                          />
                       :  
                         <>
                          {
@@ -153,46 +174,69 @@ const Main = ({username, socket, messages, usersTyping,}) => {
             }
           </div>
           <div className='messages-input-container'>
-            <input className='messages-input' 
-                   placeholder='messsage...' 
-                   id='message-input' 
-                   value={message.content}  
-                   onKeyPress={handleInputKeyPress} 
-                   onChange={(e) => setMessage({content: e.target.value, type:'message'})}
-                   style={{padding: '9px'}}
-            />
-            <input id='file_upload_id' 
-                   type='file' 
-                   onChange={(e) => selectFile(e)} 
-                   style={{display:'none'}}
-            />
-
-            <AiFillPicture  
-              size={'24px'} 
-              style={{cursor: 'pointer', color: 'black'}}
-              onClick={handeOnPictureClick}
-            />
-
-            <BsEmojiSmile 
-              size={'24px'} 
-              style={{cursor: 'pointer', color: 'black'}}
-              onClick={() => setPickerVisible(!isPickerVisible)}
-            />
-            
-            <BiSend size={'24px'} 
-                    style={{cursor: 'pointer', color: 'black'}}
-                    onClick={handleSendMessage}
-            />
-            {isPickerVisible && (
-              <div className='emoji-container'  ref={emojiPickerRef}>
-                 <EmojiPicker
-                  autoFocusSearch={false}
-                  onEmojiClick={handleEmojiClick}
-                  theme='dark'
+          {
+            isRecording
+            ?
+             null
+            : 
+              <>
+                  <input className='messages-input' 
+                      placeholder='messsage...' 
+                      id='message-input' 
+                      value={message.content}  
+                      onKeyPress={handleInputKeyPress} 
+                      onChange={(e) => setMessage({content: e.target.value, type:'message'})}
+                      style={{padding: '9px'}}
+                  />
+                  <input id='file_upload_id' 
+                      type='file' 
+                      onChange={(e) => selectFile(e)} 
+                      style={{display:'none'}}
+                  />
+                </>
+          }
+            <div style={{marginLeft: '8px', marginRight: '4px'}} onClick={() => {setIsRecording(!isRecording)}}>
+              <AudioRecorder
+                  onRecordingComplete={handleRecordVoiceMessage}
+                  audioTrackConstraints={{
+                    noiseSuppression: true,
+                    echoCancellation: true,
+                  }}
+                  onNotAllowedOrFound={(err) => console.table(err)}
+                  downloadOnSavePress={false}
+                  mediaRecorderOptions={{
+                    audioBitsPerSecond: 128000,
+                  }}
+                  showVisualizer={true}
                 />
-              </div>
-             
-            )}
+            </div>
+            
+            {
+              isRecording
+              ?
+                null
+              : 
+                <div className='options'>
+                  <div className='option-container' onClick={handeOnPictureClick}>
+                    <AiFillPicture  className='option-icon'/>
+                  </div>
+                  <div className='option-container' onClick={() => setPickerVisible(!isPickerVisible)}>
+                    <BsEmojiSmile className='option-icon'/>
+                  </div>
+                  <div className='option-container' onClick={handleSendMessage}>
+                    <BiSend className='option-icon'/>
+                  </div>
+                  {isPickerVisible && (
+                    <div className='emoji-container' ref={emojiPickerRef}>
+                      <EmojiPicker
+                        autoFocusSearch={false}
+                        onEmojiClick={handleEmojiClick}
+                        theme='dark'
+                      />
+                    </div>
+                  )}
+                </div>
+            }
           </div>
         </div>
     </div>
